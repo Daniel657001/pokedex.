@@ -1,3 +1,4 @@
+
 import tkinter as tk                      # Para criar a interface gráfica
 from tkinter import messagebox            # Para mostrar mensagens de erro
 from PIL import Image, ImageTk            # Para tratar e mostrar imagens
@@ -8,6 +9,7 @@ import tempfile                          # Para arquivo temporário
 import os
 
 # Inicializa o mixer do pygame
+pygame.init()
 pygame.mixer.init()
 
 # Variável global para guardar caminho do arquivo de som temporário
@@ -23,9 +25,15 @@ def buscar_pokemon():
         dados = resposta.json()  # Converter os dados da resposta para JSON
 
         # Obter e formatar o nome e os tipos do Pokémon
-        nome_pokemon = dados['name'].capitalize()  # Capitalizar o nome
-        tipos = ", ".join([tipo['type']['name'].capitalize() for tipo in dados['types']])  # Juntar os tipos
-        label_info.config(text=f"Nome: {nome_pokemon}\nTipos: {tipos}")  # Atualizar o texto da label com as infos
+        # Obter e formatar o nome, tipos, altura e peso do Pokémon
+        nome_pokemon = dados['name'].capitalize()
+        tipos = ", ".join([tipo['type']['name'].capitalize() for tipo in dados['types']])
+        altura = dados['height'] / 10  # decímetros para metros
+        peso = dados['weight'] / 10    # hectogramas para kg
+        label_info.config(
+            text=f"Nome: {nome_pokemon}\nTipos: {tipos}\nAltura: {altura} m\nPeso: {peso} kg"
+)
+
 
         # Obter o URL da imagem do Pokémon (sprite frontal)
         img_url = dados['sprites']['front_default']
@@ -74,8 +82,8 @@ def tocar_som():
     global arquivo_som_temp
     if arquivo_som_temp:
         try:
-            pygame.mixer.music.load(arquivo_som_temp)
-            pygame.mixer.music.play()
+            som = pygame.mixer.Sound(arquivo_som_temp)
+            som.play()
         except Exception as e:
             messagebox.showerror("Erro", f"Não foi possível tocar o som:\n{e}")
 
@@ -83,10 +91,11 @@ def tocar_som():
 janela = tk.Tk()
 janela.title("Pokédex")  # Título da janela
 janela.geometry("500x600")
+janela.resizable(False, False)
 janela.configure(bg= "#FF0000")
 # Campo de entrada de texto para o nome do Pokémon
-entry_nome = tk.Entry(font=("Arial", 14))
-entry_nome.place(x=120, y=50)
+entry_nome = tk.Entry(font=("Arial", 14), bg="#FF0000", width=30)
+entry_nome.place(x=80, y=50)
 
 
 #label's da pokedex (design)
@@ -106,9 +115,8 @@ label_ecra.place(x=420, y= 120)
 
 
 # Botão para iniciar a busca
-botao_buscar = tk.Button(janela, text="Buscar", command=buscar_pokemon)
-botao_buscar.pack(pady=5)
-
+botao_buscar = tk.Button(janela, text="Buscar", command=buscar_pokemon, width=20)
+botao_buscar.place(x=175, y=90)
 # Label para mostrar a imagem do Pokémon
 label_imagem = tk.Label(janela, bg= "#FF0000")
 label_imagem.place(x=110, y=150)
@@ -118,7 +126,7 @@ label_info = tk.Label(janela, font=("Arial", 12), justify="left", bg= "#FF0000")
 label_info.place(x=200, y=525)
 
 btn_tocar_som = tk.Button(janela, text="Tocar Som", font=("Arial", 16), bg="red", fg="white", command=tocar_som)
-btn_tocar_som.pack(pady=10)
+btn_tocar_som.place(x=75, y= 525)
 
 
 # Iniciar o loop principal da aplicação (interface gráfica)
